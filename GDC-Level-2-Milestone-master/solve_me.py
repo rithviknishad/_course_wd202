@@ -62,18 +62,13 @@ $ python tasks.py help # Show usage
 $ python tasks.py report # Statistics"""
         )
 
-    def add(self, args, skip_writing=False):
+    def add(self, args, flush=True):
         priority = int(args[0])
         task = " ".join(args[1:])
-
         if priority in self.current_items.keys():
-            self.add(
-                [priority + 1, self.current_items.pop(priority)], skip_writing=True
-            )
-
+            self.add([priority + 1, self.current_items.pop(priority)], flush=False)
         self.current_items[priority] = task
-
-        if not skip_writing:
+        if flush:
             self.write_current()
             print(f'Added task: "{task}" with priority {priority}')
 
@@ -100,16 +95,13 @@ $ python tasks.py report # Statistics"""
 
     def ls(self):
         self.current_items = dict(sorted(self.current_items.items()))
-
         for index, (priority, item) in enumerate(self.current_items.items()):
             print(f"{index + 1}. {item} [{priority}]")
 
     def report(self):
         print(f"Pending : {len(self.current_items)}")
         self.ls()
-
         print()
-
         print(f"Completed : {len(self.completed_items)}")
         for index, item in enumerate(self.completed_items):
             print(f"{index + 1}. {item}")
