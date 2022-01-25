@@ -1,6 +1,6 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
-
-from matplotlib.pyplot import title
+import urllib.parse as parse
+import json
 
 
 class TasksCommand:
@@ -122,21 +122,83 @@ $ python tasks.py runserver # Starts the tasks management server"""
         for index, item in enumerate(self.completed_items):
             print(f"{index + 1}. {item}")
 
+    def render_add_task(self):
+        content = f"""
+<div class="w-full max-w-xs">
+  <form action="add" method="GET" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" id="add_task_form">
+    <div class="mb-4">
+      <label class="block text-gray-700 text-sm font-bold mb-2">
+        Describe the task
+      </label>
+      <input name="task" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="text" placeholder="Task">
+    </div>
+    <div class="mb-6">
+      <label class="block text-gray-700 text-sm font-bold mb-2">
+        Priority
+      </label>
+      <input name="priority" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" type="text" placeholder="Priority (1 being highest)">
+    </div>
+    <div class="flex items-center justify-between">
+      <button 
+        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+        type="submit"
+        form="add_task_form"
+        value="Add"
+        onclick="location.href=''"
+      >
+        Add
+      </button>
+    </div>
+  </form>
+</div>
+        """
+        return self.render_page_from_template("Add new task", content)
+
     def render_pending_tasks(self):
+        subcontent = "<h6>Hooray! You've no tasks pending!</h6>"
+        if len(self.current_items) != 0:
+            subcontent = "".join(
+                [
+                    self.render_pending_task_tile(*task)
+                    for task in self.current_items.items()
+                ]
+            )
         content = f"""
         <div class="flex items-center justify-center py-6">
-            <div class="grid grid-cols-1 gap-2">
-                {"".join([self.render_pending_task_tile(*task) for task in self.current_items.items()])}
-            </div>
+            <button class="relative inline-flex items-center justify-center p-0.5 mb-2 mr-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-purple-600 to-blue-500 group-hover:from-purple-600 group-hover:to-blue-500 hover:text-white dark:text-white focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800">
+                <span class="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0" onclick="location.href='/completed'">
+                    Completed Tasks
+                </span>
+            </button>
+            <button 
+                type="button" 
+                class="text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2"
+                onclick="location.href='/add'"
+            >
+                Add new task
+            </button>
+        </div>
+        <div class="flex items-center justify-center py-6">
+            <div class="grid xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-4 text-slate-200">{subcontent}</div>
         </div>"""
         return self.render_page_from_template("Pending Tasks", content)
 
     def render_completed_tasks(self):
+        subcontent = "<h6>You haven't completed any tasks yet :(</h6>"
+        if len(self.completed_items) != 0:
+            subcontent = "".join(
+                [self.render_completed_task_tile(task) for task in self.completed_items]
+            )
         content = f"""
         <div class="flex items-center justify-center py-6">
-            <div class="grid grid-cols-1 gap-2">
-                {"".join([self.render_completed_task_tile(task) for task in self.completed_items])}
-            </div>
+            <button class="relative inline-flex items-center justify-center p-0.5 mb-2 mr-2 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-purple-600 to-blue-500 group-hover:from-purple-600 group-hover:to-blue-500 hover:text-white dark:text-white focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800">
+                <span class="relative px-5 py-2.5 transition-all ease-in duration-75 bg-white dark:bg-gray-900 rounded-md group-hover:bg-opacity-0" onclick="location.href='/tasks'">
+                    Pending Tasks
+                </span>
+            </button>
+        </div>
+        <div class="flex items-center justify-center py-6">
+            <div class="grid grid-cols-1 gap-2 text-slate-200">{subcontent}</div>
         </div>"""
         return self.render_page_from_template("Completed Tasks", content)
 
@@ -162,21 +224,28 @@ $ python tasks.py runserver # Starts the tasks management server"""
 
     def render_pending_task_tile(self, priority, task):
         return f"""
-        <div class="flex w-full items-center flex justify-center items-center">
-            <div>
-                <div class="max-w-xs flex flex-col justify-between bg-gradient-to-br from-purple-600 to-blue-500 hover:from-pink-500 hover:to-yellow-500 rounded-lg mb-6 py-5 px-4">
-                    <div>
-                        <h4 class="focus:outline-none text-gray-100 font-bold mb-3">{task}</h4>
-                        <p class="focus:outline-none text-gray-100 text-sm">Priority: {priority}</p>
-                    </div>
-                    <div>
-                        <div class="flex items-center justify-between text-gray-800">
-                            Add Delete / Mark as Done buttons
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>"""
+<div class="flex justify-center">
+  <div class="block p-6 rounded-lg shadow-lg bg-white max-w-sm">
+    <h5 class="text-gray-900 text-xl leading-tight font-medium mb-2">{task}</h5>
+    <p class="text-gray-700 text-base mb-4">
+      Priority : {priority}
+    </p>
+    <button 
+        type="button" 
+        class="inline-block px-6 py-2.5 bg-blue-600 text-white font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out"
+        onclick="location.href='/done?priority={priority}'"
+    >
+        Mark as done
+    </button>
+    <button
+        type="button"
+        class="inline-block px-6 py-2.5 bg-blue-600 text-white font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out"
+        onclick="location.href='/delete?priority={priority}'"
+    >
+        Delete
+    </button>
+  </div>
+</div>"""
 
     def render_completed_task_tile(self, task_description):
         return f"""
@@ -189,6 +258,7 @@ class TasksServer(TasksCommand, BaseHTTPRequestHandler):
     def do_GET(self):
         task_command_object = TasksCommand()
 
+        # TODO: ignore reading from volume on every request.
         task_command_object.read_current()
         task_command_object.read_completed()
 
@@ -196,6 +266,23 @@ class TasksServer(TasksCommand, BaseHTTPRequestHandler):
             content = task_command_object.render_pending_tasks()
         elif self.path == "/completed":
             content = task_command_object.render_completed_tasks()
+        elif self.path.startswith("/add"):
+            params = dict(parse.parse_qsl(parse.urlsplit(self.path).query))
+            if {"task", "priority"} <= params.keys():
+                task_command_object.run("add", [params["priority"], params["task"]])
+                content = self.redirect_to("/tasks")
+            else:
+                content = task_command_object.render_add_task()
+        elif self.path.startswith("/done"):
+            params = dict(parse.parse_qsl(parse.urlsplit(self.path).query))
+            if {"priority"} <= params.keys():
+                task_command_object.run("done", [params["priority"]])
+            content = self.redirect_to("/tasks")
+        elif self.path.startswith("/delete"):
+            params = dict(parse.parse_qsl(parse.urlsplit(self.path).query))
+            if {"priority"} <= params.keys():
+                task_command_object.run("delete", [params["priority"]])
+            content = self.redirect_to("/tasks")
         else:
             self.send_response(404)
             self.end_headers()
@@ -204,3 +291,6 @@ class TasksServer(TasksCommand, BaseHTTPRequestHandler):
         self.send_header("content-type", "text/html")
         self.end_headers()
         self.wfile.write(content.encode())
+
+    def redirect_to(self, location):
+        return f"""<script type="text/javascript">window.location.href = "{location}"</script>"""
