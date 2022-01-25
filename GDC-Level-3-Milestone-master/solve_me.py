@@ -144,7 +144,6 @@ $ python tasks.py runserver # Starts the tasks management server"""
         type="submit"
         form="add_task_form"
         value="Add"
-        onclick="location.href=''"
       >
         Add
       </button>
