@@ -16,6 +16,7 @@ def tasks_view(request):
         "tasks.html",
         {
             "tasks": tasks,
+            "has_pending": bool(tasks),
         },
     )
 
@@ -44,7 +45,9 @@ def all_tasks_view(request):
 
 
 def add_task_view(request):
-    tasks.append(request.GET.get("task"))
+    task = request.GET.get("task")
+    if task:
+        tasks.append(task)
     return __HTTP_RESPONSE_REDIRECT_TO_TASKS
 
 
