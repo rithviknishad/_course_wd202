@@ -16,11 +16,28 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from tasks.views import tasks_view, add_task_view, delete_task_view
+from tasks.views import (
+    GenericTaskDeleteView,
+    GenericTaskDetailView,
+    GenericTaskView,
+    GenericTaskCreateView,
+    GenericTaskUpdateView,
+    UserCreateView,
+    UserLoginView,
+    session_storage_view,
+)
+
+from django.contrib.auth.views import LogoutView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("tasks/", tasks_view),
-    path("add-task/", add_task_view),
-    path("delete-task/<int:index>", delete_task_view),
+    path("tasks/", GenericTaskView.as_view()),
+    path("create-task/", GenericTaskCreateView.as_view()),
+    path("update-task/<pk>", GenericTaskUpdateView.as_view()),
+    path("detail-task/<pk>", GenericTaskDetailView.as_view()),
+    path("delete-task/<pk>", GenericTaskDeleteView.as_view()),
+    path("session-test", session_storage_view),
+    path("user/signup", UserCreateView.as_view()),
+    path("user/login", UserLoginView.as_view()),
+    path("user/logout", LogoutView.as_view()),
 ]
