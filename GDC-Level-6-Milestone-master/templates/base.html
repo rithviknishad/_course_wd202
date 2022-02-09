@@ -1,0 +1,27 @@
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>
+            {% if title %} {{ title }} | Todo Manager {% else %} Todo Manager {% endif %}
+        </title>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+
+    <body class="bg-white leading-normal tracking-normal flex justify-center">
+        <div>
+            <div class="h-[58px]"></div>
+            <p class="font-bold text-[40px] text-transparent bg-clip-text bg-gradient-to-br from-pink-400 to-red-600">
+                {% if page_header %}
+                    {{ page_header }}
+                {% else %} 
+                    Todo Manager
+                {% endif %}
+            </p>
+            {% block content %}{% endblock %}
+        </div>
+    </body>
+</html>
