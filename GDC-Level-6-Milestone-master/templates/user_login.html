@@ -10,7 +10,7 @@
         <div class="px-[9px] py-[11px]">
             {{ field.errors }}
             <label for="{{field.id_for_label}}" class="text-[18px]">{{ field.label_tag }}</label>
-            <div class="py-[3px]"></div>
+            <div class="h-[6px]"></div>
             {{ field }}
             {% if field.help_text %}<p class="help">{{ field.help_text|safe }}</p>{% endif %}
         </div>
@@ -24,8 +24,8 @@
 
     {%csrf_token%}
 
-    <button type="submit" class="mt-[22px] mx-[9px] w-[382px] h-[57px] text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:bg-gradient-to-l focus:ring-4 focus:ring-purple-200 dark:focus:ring-purple-800 font-medium rounded-lg text-sm text-center mr-2 mb-2">
-        <p class="text-[18px]">Login</p> 
+    <button type="submit" class="mt-[44px] mx-[9px] w-[382px] h-[57px] text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:bg-gradient-to-l focus:ring-4 focus:ring-purple-200 dark:focus:ring-purple-800 font-medium rounded-lg text-sm text-center mr-2 mb-2">
+        <p class="text-[18px]">{Login}</p> 
     </button>
 </form>
 
