@@ -25,7 +25,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     # User Authentication related URLs
     path("user/login", UserLoginView.as_view()),
-    path("user/signup", UserCreateView.as_view()),
+    path("user/signup", UserSignupView.as_view()),
     path("user/logout", LogoutView.as_view()),
     # Authenticated User's Task Management related URLs
     path("tasks/", AllTaskView.as_view()),
