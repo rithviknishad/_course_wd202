@@ -14,9 +14,24 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.contrib.auth.views import LogoutView
+from django.urls import path, include
 
+from tasks.views import *
 
 urlpatterns = [
+    # For hot-reloading.
+    path("__reload__/", include("django_browser_reload.urls")),
     path("admin/", admin.site.urls),
+    # User Authentication related URLs
+    path("user/login", UserLoginView.as_view()),
+    path("user/signup", UserCreateView.as_view()),
+    path("user/logout", LogoutView.as_view()),
+    # Authenticated User's Task Management related URLs
+    path("tasks/", AllTaskView.as_view()),
+    path("tasks/pending/", PendingTaskView.as_view()),
+    path("tasks/completed/", CompletedTaskView.as_view()),
+    path("create-task/", TaskCreateView.as_view()),
+    path("update-task/<pk>", TaskUpdateView.as_view()),
+    path("delete-task/<pk>", GenericTaskDeleteView.as_view()),
 ]
