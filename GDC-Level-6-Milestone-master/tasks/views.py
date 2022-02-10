@@ -14,7 +14,9 @@ from tasks.models import Task
 
 class GenericFormMixin:
     field_styles = "appearance-none bg-[#F1F5F9] border-2 border-[#F1F5F9] rounded-lg text-gray-700"
+
     text_field_style = f"w-full leading-tight py-2 px-4 focus:outline-none focus:bg-white focus:border-purple-500 {field_styles}"
+    checkbox_style = f"rounded-sm form-check-input appearance-none h-4 w-4 checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer {field_styles}"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -25,7 +27,9 @@ class GenericFormMixin:
 
 class AuthorizedTaskManager(LoginRequiredMixin):
     def get_queryset(self):
-        return Task.objects.filter(deleted=False, user=self.request.user)
+        r = Task.objects.filter(deleted=False, user=self.request.user)
+        r = r.order_by("priority")
+        return r
 
 
 class UserAuthenticationViewMixin:
@@ -112,8 +116,7 @@ class TaskForm(GenericFormMixin, ModelForm):
         super().__init__(*args, **kwargs)
         for field in self.Meta.fields[0:3]:
             self.fields[field].widget.attrs["class"] = self.text_field_style
-        checkbox_style = f"rounded-sm form-check-input appearance-none h-4 w-4 checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer {self.field_styles}"
-        self.fields["completed"].widget.attrs["class"] = checkbox_style
+        self.fields["completed"].widget.attrs["class"] = self.checkbox_style
 
     def clean_title(self):
         title = self.cleaned_data["title"]
@@ -127,7 +130,7 @@ class TaskForm(GenericFormMixin, ModelForm):
 
 
 class TaskFormViewMixin(AuthorizedTaskManager):
-    model = Task
+
     form_class = TaskForm
     template_name = "task_form.html"
     success_url = "/tasks"
@@ -139,6 +142,16 @@ class TaskFormViewMixin(AuthorizedTaskManager):
         context["task_form_operation"] = self.task_form_operation
         return context
 
+    def ensure_unique_priority(self, priority: int):
+
+        query_result = self.get_queryset().filter(priority=priority)
+
+        if len(query_result) > 1:
+            next_task = query_result[0]
+            next_task.priority = priority + 1
+            next_task.save()
+            self.ensure_unique_priority(next_task.priority)
+
 
 class TaskCreateView(TaskFormViewMixin, CreateView):
     task_form_operation = "Create"
@@ -147,14 +160,25 @@ class TaskCreateView(TaskFormViewMixin, CreateView):
         self.object: Task = form.save()
         self.object.user = self.request.user
         self.object.save()
+        self.ensure_unique_priority(self.object.priority)
         return HttpResponseRedirect(self.get_success_url())
 
 
 class TaskUpdateView(TaskFormViewMixin, UpdateView):
     task_form_operation = "Update"
 
+    def form_valid(self, form) -> HttpResponse:
+        super().form_valid(form)
+        self.ensure_unique_priority(self.object.priority)
+        return HttpResponseRedirect(self.get_success_url())
+
 
 class GenericTaskDeleteView(AuthorizedTaskManager, DeleteView):
     model = Task
     template_name = "task_delete.html"
     success_url = "/tasks"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["page_header"] = "Delete Task?"
+        return context
