@@ -14,7 +14,7 @@
     <body class="bg-white leading-normal tracking-normal flex justify-center">
         <div>
             <div class="h-[58px]"></div>
-            <div class="row">
+            <div class="flex">
                 <p class="font-bold text-[36px] text-transparent bg-clip-text bg-gradient-to-br from-pink-400 to-red-600">
                     {% if page_header %}
                         {{ page_header }}
@@ -22,6 +22,8 @@
                         Todo Manager
                     {% endif %}
                 </p>
+                <div class="flex-1"></div>
+                {% block action_buttons %}{% endblock action_buttons %}
             </div>
             <div class="px-[9px]">
                 {% block content %}{% endblock %}

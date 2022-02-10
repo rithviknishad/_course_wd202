@@ -1,5 +1,11 @@
 {% extends 'base.html' %}
 
+{% block action_buttons %}
+    <a href="/user/logout" class="p-3 text-[20px] text-[#EF4444]">
+        Log Out
+    </a>
+{% endblock action_buttons %}
+
 {% block content %}
     <p class="text-[#475569] pb-[7px] pt-[23px]">{{tasks_status_description}}</p>
 
