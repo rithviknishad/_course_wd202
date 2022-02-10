@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <p class="text-[24px] px-[9px] pb-[33px] pt-[72px]">{{auth_action}}</p>
+    <p class="text-[24px] pb-[33px] pt-[72px]">{{auth_action}}</p>
 
     <form action="" method="post">
         {% for field in form %}
-            <div class="px-[9px] py-[11px]">
+            <div class="py-[11px]">
                 <label for="{{field.id_for_label}}" class="text-[18px]">{{ field.label_tag }}</label>
                 <div class="h-[6px]"></div>
                 {{ field }}
@@ -15,7 +15,7 @@
             </div>
         {% endfor %}
         
-        <div class="w-[382px] mx-[9px]">
+        <div class="w-[382px]">
             {% for error in form.non_field_errors %}
                 <p class="text-red-500">{{error}}</p>
             {% endfor %}
@@ -23,10 +23,8 @@
 
         {%csrf_token%}
 
-        <button type="submit" class="mt-[44px] mx-[9px] w-[382px] h-[57px] text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:bg-gradient-to-l focus:ring-4 focus:ring-purple-200 dark:focus:ring-purple-800 font-medium rounded-lg text-sm text-center mr-2 mb-2">
-            <p class="text-[18px]">
-                {{auth_action}}
-            </p> 
+        <button type="submit" class="mt-[44px] w-[382px] h-[57px] text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:bg-gradient-to-l focus:ring-4 focus:ring-purple-200 dark:focus:ring-purple-800 font-medium rounded-lg text-sm text-center mr-2 mb-2">
+            <p class="text-[18px]">{{auth_action}}</p> 
         </button>
     </form>
 {% endblock content %}
