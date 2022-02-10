@@ -1,5 +1,6 @@
+from mimetypes import init
 from re import template
-from django import forms
+from django.forms import Form
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
@@ -11,21 +12,23 @@ from django.views.generic.list import ListView
 from tasks.models import Task
 
 
-class FormStyleMixin(forms.Form):
+class GenericFormMixin:
+    field_styles = "appearance-none bg-[#F1F5F9] border-2 border-[#F1F5F9] rounded-lg text-gray-700"
+    text_field_style = f"w-full leading-tight py-2 px-4 focus:outline-none focus:bg-white focus:border-purple-500 {field_styles}"
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.label_suffix = ""
-        style = "bg-[#F1F5F9] appearance-none border-2 border-[#F1F5F9] rounded-lg w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
         for field in self.fields:
-            self.fields[field].widget.attrs["class"] = style
+            self.fields[field].widget.attrs["class"] = self.field_styles
 
 
-class __AuthorizedTaskManager(LoginRequiredMixin):
+class AuthorizedTaskManager(LoginRequiredMixin):
     def get_queryset(self):
         return Task.objects.filter(deleted=False, user=self.request.user)
 
 
-class __UserAuthenticationViewMixin:
+class UserAuthenticationViewMixin:
     template_name = "user_auth_form.html"
     auth_action = "Auth"
 
@@ -36,26 +39,33 @@ class __UserAuthenticationViewMixin:
         return context
 
 
-class LoginForm(FormStyleMixin, AuthenticationForm):
+class AuthFormMixin(GenericFormMixin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs["class"] = self.text_field_style
+
+
+class LoginForm(AuthFormMixin, AuthenticationForm):
     pass
 
 
-class UserLoginView(__UserAuthenticationViewMixin, LoginView):
+class UserLoginView(UserAuthenticationViewMixin, LoginView):
     form_class = LoginForm
     auth_action = "Login"
 
 
-class SignUpForm(FormStyleMixin, UserCreationForm):
+class SignUpForm(AuthFormMixin, UserCreationForm):
     pass
 
 
-class UserSignupView(__UserAuthenticationViewMixin, CreateView):
+class UserSignupView(UserAuthenticationViewMixin, CreateView):
     form_class = SignUpForm
     auth_action = "Sign Up"
     success_url = "/user/login"
 
 
-class GenericTaskView(__AuthorizedTaskManager, ListView):
+class GenericTaskView(AuthorizedTaskManager, ListView):
     model = Task
     template_name = "tasks.html"
     context_object_name = "tasks"
@@ -97,7 +107,14 @@ class CompletedTaskView(GenericTaskView):
         return super().get_queryset().filter(completed=True)
 
 
-class TaskForm(ModelForm):
+class TaskForm(GenericFormMixin, ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.Meta.fields[0:3]:
+            self.fields[field].widget.attrs["class"] = self.text_field_style
+        checkbox_style = f"rounded-sm form-check-input appearance-none h-4 w-4 checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer {self.field_styles}"
+        self.fields["completed"].widget.attrs["class"] = checkbox_style
+
     def clean_title(self):
         title = self.cleaned_data["title"]
         if len(title) < 4:
@@ -106,19 +123,25 @@ class TaskForm(ModelForm):
 
     class Meta:
         model = Task
-        fields = [
-            "title",
-            "description",
-            "priority",
-            "completed",
-        ]
+        fields = ["title", "description", "priority", "completed"]
 
 
-# TODO: test access of this view without authenticating.
-class TaskCreateView(__AuthorizedTaskManager, CreateView):
+class TaskFormViewMixin(AuthorizedTaskManager):
+    model = Task
     form_class = TaskForm
-    template_name = "task_create.html"
+    template_name = "task_form.html"
     success_url = "/tasks"
+    task_form_operation = ""
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["page_header"] = f"{self.task_form_operation} Todo"
+        context["task_form_operation"] = self.task_form_operation
+        return context
+
+
+class TaskCreateView(TaskFormViewMixin, CreateView):
+    task_form_operation = "Create"
 
     def form_valid(self, form) -> HttpResponse:
         self.object: Task = form.save()
@@ -127,14 +150,11 @@ class TaskCreateView(__AuthorizedTaskManager, CreateView):
         return HttpResponseRedirect(self.get_success_url())
 
 
-class TaskUpdateView(__AuthorizedTaskManager, UpdateView):
-    model = Task
-    form_class = TaskForm
-    template_name = "task_update.html"
-    success_url = "/tasks"
+class TaskUpdateView(TaskFormViewMixin, UpdateView):
+    task_form_operation = "Update"
 
 
-class GenericTaskDeleteView(__AuthorizedTaskManager, DeleteView):
+class GenericTaskDeleteView(AuthorizedTaskManager, DeleteView):
     model = Task
     template_name = "task_delete.html"
     success_url = "/tasks"

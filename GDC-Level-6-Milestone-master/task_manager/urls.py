@@ -20,9 +20,9 @@ from django.urls import path, include
 from tasks.views import *
 
 urlpatterns = [
+    path("admin/", admin.site.urls),
     # For hot-reloading.
     path("__reload__/", include("django_browser_reload.urls")),
-    path("admin/", admin.site.urls),
     # User Authentication related URLs
     path("user/login/", UserLoginView.as_view()),
     path("user/signup/", UserSignupView.as_view()),

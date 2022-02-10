@@ -14,14 +14,18 @@
     <body class="bg-white leading-normal tracking-normal flex justify-center">
         <div>
             <div class="h-[58px]"></div>
-            <p class="font-bold text-[40px] text-transparent bg-clip-text bg-gradient-to-br from-pink-400 to-red-600">
-                {% if page_header %}
-                    {{ page_header }}
-                {% else %} 
-                    Todo Manager
-                {% endif %}
-            </p>
-            {% block content %}{% endblock %}
+            <div class="row">
+                <p class="font-bold text-[36px] text-transparent bg-clip-text bg-gradient-to-br from-pink-400 to-red-600">
+                    {% if page_header %}
+                        {{ page_header }}
+                    {% else %} 
+                        Todo Manager
+                    {% endif %}
+                </p>
+            </div>
+            <div class="px-[9px]">
+                {% block content %}{% endblock %}
+            </div>
         </div>
     </body>
 </html>
