@@ -29,5 +29,11 @@ class Task(models.Model):
     Lower the value, higher the priority (i.e., 0 has highest priority).
     """
 
+    class Meta:
+        ordering = (
+            "completed",
+            "priority",
+        )
+
     def __str__(self):
         return self.title
