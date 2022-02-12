@@ -1,11 +1,6 @@
-from mimetypes import init
-from re import template
-from urllib import response
-from django.forms import Form
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
-from django.db import transaction
 from django.forms import ModelForm, ValidationError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
