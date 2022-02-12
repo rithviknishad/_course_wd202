@@ -1,9 +1,11 @@
 from mimetypes import init
 from re import template
+from urllib import response
 from django.forms import Form
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
+from django.db import transaction
 from django.forms import ModelForm, ValidationError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
@@ -15,7 +17,9 @@ from tasks.models import Task
 class GenericFormMixin:
     field_styles = "appearance-none bg-[#F1F5F9] border-2 border-[#F1F5F9] rounded-lg text-gray-700"
 
-    text_field_style = f"w-full leading-tight py-2 px-4 focus:outline-none focus:bg-white focus:border-purple-500 {field_styles}"
+    text_field_style = (
+        f"w-full leading-tight py-2 px-4 focus:outline-none focus:bg-white focus:border-purple-500 {field_styles}"
+    )
     checkbox_style = f"rounded-sm form-check-input appearance-none h-4 w-4 checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer {field_styles}"
 
     def __init__(self, *args, **kwargs):
@@ -27,9 +31,7 @@ class GenericFormMixin:
 
 class AuthorizedTaskManager(LoginRequiredMixin):
     def get_queryset(self):
-        r = Task.objects.filter(deleted=False, user=self.request.user)
-        r = r.order_by("priority")
-        return r
+        return Task.objects.filter(deleted=False, user=self.request.user)
 
 
 class UserAuthenticationViewMixin:
@@ -142,25 +144,37 @@ class TaskFormViewMixin(AuthorizedTaskManager):
         context["task_form_operation"] = self.task_form_operation
         return context
 
-    def ensure_unique_priority(self, priority: int):
+    def cascade_update_priorities(self, priority, task_id) -> int:
+        print("performing cascade update")
+        deltas = []
+        for task in self.get_queryset().filter(completed=False, priority__gte=priority).exclude(id=task_id):
+            if task.priority != priority:
+                break
+            task.priority = priority = priority + 1
+            deltas.append(task)
+        return Task.objects.bulk_update(deltas, ["priority"])
 
-        query_result = self.get_queryset().filter(priority=priority)
-
-        if len(query_result) > 1:
-            next_task = query_result[0]
-            next_task.priority = priority + 1
-            next_task.save()
-            self.ensure_unique_priority(next_task.priority)
+    def form_valid(self, form) -> HttpResponse:
+        old_task = self.get_queryset().filter(id=self.object.id)
+        self.object = form.save()
+        has_priority_delta = self.object.priority != (old_task[0].priority if len(old_task) else -1)
+        if not self.object.user:
+            self.object.user = self.request.user
+            self.object.save()
+        if not self.object.completed and has_priority_delta:
+            self.cascade_update_priorities(self.object.priority, self.object.id)
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class TaskCreateView(TaskFormViewMixin, CreateView):
     task_form_operation = "Create"
 
     def form_valid(self, form) -> HttpResponse:
-        self.object: Task = form.save()
+        self.object = form.save()
         self.object.user = self.request.user
         self.object.save()
-        self.ensure_unique_priority(self.object.priority)
+        if not self.object.completed:
+            self.cascade_update_priorities(self.object.priority, self.object.id)
         return HttpResponseRedirect(self.get_success_url())
 
 
@@ -168,8 +182,10 @@ class TaskUpdateView(TaskFormViewMixin, UpdateView):
     task_form_operation = "Update"
 
     def form_valid(self, form) -> HttpResponse:
-        super().form_valid(form)
-        self.ensure_unique_priority(self.object.priority)
+        has_priority_delta = self.get_queryset().filter(id=self.object.id)[0].priority != self.object.priority
+        self.object = form.save()
+        if not self.object.completed and has_priority_delta:
+            self.cascade_update_priorities(self.object.priority, self.object.id)
         return HttpResponseRedirect(self.get_success_url())
 
 
