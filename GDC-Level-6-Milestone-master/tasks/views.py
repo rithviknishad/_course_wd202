@@ -140,7 +140,6 @@ class TaskFormViewMixin(AuthorizedTaskManager):
         return context
 
     def cascade_update_priorities(self, priority, task_id) -> int:
-        print("performing cascade update")
         deltas = []
         for task in self.get_queryset().filter(completed=False, priority__gte=priority).exclude(id=task_id):
             if task.priority != priority:
@@ -149,39 +148,29 @@ class TaskFormViewMixin(AuthorizedTaskManager):
             deltas.append(task)
         return Task.objects.bulk_update(deltas, ["priority"])
 
-    def form_valid(self, form) -> HttpResponse:
-        old_task = self.get_queryset().filter(id=self.object.id)
-        self.object = form.save()
-        has_priority_delta = self.object.priority != (old_task[0].priority if len(old_task) else -1)
-        if not self.object.user:
-            self.object.user = self.request.user
-            self.object.save()
-        if not self.object.completed and has_priority_delta:
-            self.cascade_update_priorities(self.object.priority, self.object.id)
-        return HttpResponseRedirect(self.get_success_url())
-
 
 class TaskCreateView(TaskFormViewMixin, CreateView):
     task_form_operation = "Create"
 
     def form_valid(self, form) -> HttpResponse:
-        self.object = form.save()
+        response = super().form_valid(form)
         self.object.user = self.request.user
         self.object.save()
         if not self.object.completed:
             self.cascade_update_priorities(self.object.priority, self.object.id)
-        return HttpResponseRedirect(self.get_success_url())
+        return response
 
 
 class TaskUpdateView(TaskFormViewMixin, UpdateView):
     task_form_operation = "Update"
 
     def form_valid(self, form) -> HttpResponse:
-        has_priority_delta = self.get_queryset().filter(id=self.object.id)[0].priority != self.object.priority
-        self.object = form.save()
-        if not self.object.completed and has_priority_delta:
+        response = super().form_valid(form)
+        if not form.has_changed():
+            return response
+        if not self.object.completed and ("priority" in form.changed_data):
             self.cascade_update_priorities(self.object.priority, self.object.id)
-        return HttpResponseRedirect(self.get_success_url())
+        return response
 
 
 class GenericTaskDeleteView(AuthorizedTaskManager, DeleteView):
