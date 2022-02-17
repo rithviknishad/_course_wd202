@@ -21,7 +21,7 @@ class TaskSerializer(ModelSerializer):
 
     class Meta:
         model = Task
-        fields = ["title", "description", "priority", "completed", "user", "status"]
+        fields = ["id", "title", "description", "priority", "completed", "user", "status"]
 
 
 class TaskFilter(FilterSet):
