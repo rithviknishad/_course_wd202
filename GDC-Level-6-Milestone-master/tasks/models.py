@@ -44,3 +44,19 @@ class Task(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class TaskStatusChangeLog(models.Model):
+    """Model class for task status change event records."""
+
+    task = models.ForeignKey(Task, on_delete=models.CASCADE)
+    """The task this status change log is associated to."""
+
+    timestamp = models.DateTimeField(auto_now=True)
+    """The timestamp when the status change event occurred."""
+
+    old_status = models.CharField(max_length=100, choices=Task.StatusChoices.choices)
+    """The status of the task before updating the new status."""
+
+    new_status = models.CharField(max_length=100, choices=Task.StatusChoices.choices)
+    """The new status the task is updated to."""
