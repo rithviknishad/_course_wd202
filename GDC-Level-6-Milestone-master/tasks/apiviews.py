@@ -74,8 +74,8 @@ class TaskStatusChangesFilter(FilterSet):
     """Filter sets for Tasks."""
 
     timestamp = DateTimeFromToRangeFilter(field_name="timestamp", label="Date")
-    old_status = ChoiceFilter(choices=Task.StatusChoices.choices)
-    new_status = ChoiceFilter(choices=Task.StatusChoices.choices)
+    old_status = ChoiceFilter(choices=Task.Statuses.choices)
+    new_status = ChoiceFilter(choices=Task.Statuses.choices)
 
 
 class TaskStatusChangesViewSet(ReadOnlyModelViewSet):

@@ -7,7 +7,7 @@ class Task(models.Model):
     class Meta:
         ordering = ("completed", "priority")
 
-    class StatusChoices(models.TextChoices):
+    class Statuses(models.TextChoices):
         PENDING = "Pending", "Pending"
         IN_PROGRESS = "In Progress", "In Progress"
         COMPLETED = "Completed", "Completed"
@@ -37,7 +37,7 @@ class Task(models.Model):
     Lower the value, higher the priority (i.e., 0 has highest priority).
     """
 
-    status = models.CharField(max_length=100, choices=StatusChoices.choices, default=StatusChoices.PENDING)
+    status = models.CharField(max_length=100, choices=Statuses.choices, default=Statuses.PENDING)
     """
     The current status of the task.
     """
@@ -55,8 +55,8 @@ class TaskStatusChangeLog(models.Model):
     timestamp = models.DateTimeField(auto_now=True)
     """The timestamp when the status change event occurred."""
 
-    old_status = models.CharField(max_length=100, choices=Task.StatusChoices.choices)
+    old_status = models.CharField(max_length=100, choices=Task.Statuses.choices)
     """The status of the task before updating the new status."""
 
-    new_status = models.CharField(max_length=100, choices=Task.StatusChoices.choices)
+    new_status = models.CharField(max_length=100, choices=Task.Statuses.choices)
     """The new status the task is updated to."""
