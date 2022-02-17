@@ -20,11 +20,12 @@ from django.db import router
 from django.urls import path, include
 from rest_framework.routers import SimpleRouter
 
-from tasks.apiviews import TaskViewSet
+from tasks.apiviews import TaskStatusChangesViewSet, TaskViewSet
 
 router = SimpleRouter()
 
 router.register("api/task", TaskViewSet)
+router.register("api/task-status-changes", TaskStatusChangesViewSet)
 
 from tasks.views import *
 
