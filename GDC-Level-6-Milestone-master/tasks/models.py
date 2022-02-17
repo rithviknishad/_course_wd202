@@ -4,6 +4,14 @@ from django.contrib.auth.models import User
 
 
 class Task(models.Model):
+    class Meta:
+        ordering = ("completed", "priority")
+
+    class StatusChoices(models.TextChoices):
+        PENDING = "Pending", "Pending"
+        IN_PROGRESS = "In Progress", "In Progress"
+        COMPLETED = "Completed", "Completed"
+        CANCELLED = "Cancelled", "Cancelled"
 
     title = models.CharField(max_length=100)
     """The title of the task."""
@@ -29,11 +37,10 @@ class Task(models.Model):
     Lower the value, higher the priority (i.e., 0 has highest priority).
     """
 
-    class Meta:
-        ordering = (
-            "completed",
-            "priority",
-        )
+    status = models.CharField(max_length=100, choices=StatusChoices.choices, default=StatusChoices.PENDING)
+    """
+    The current status of the task.
+    """
 
     def __str__(self):
         return self.title
