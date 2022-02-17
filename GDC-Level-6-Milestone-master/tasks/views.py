@@ -114,6 +114,7 @@ class TaskForm(GenericFormMixin, ModelForm):
         super().__init__(*args, **kwargs)
         for field in self.Meta.fields[0:3]:
             self.fields[field].widget.attrs["class"] = self.text_field_style
+        self.fields["completed"].widget.attrs["class"] = self.checkbox_style
         self.fields["status"].widget.attrs["class"] = self.choicebox_style
 
     def clean_title(self):
@@ -124,7 +125,7 @@ class TaskForm(GenericFormMixin, ModelForm):
 
     class Meta:
         model = Task
-        fields = ["title", "description", "priority", "status"]
+        fields = ["title", "description", "priority", "completed", "status"]
 
 
 class TaskFormViewMixin(AuthorizedTaskManager):

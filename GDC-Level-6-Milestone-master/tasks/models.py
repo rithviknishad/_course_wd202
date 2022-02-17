@@ -38,9 +38,7 @@ class Task(models.Model):
     """
 
     status = models.CharField(max_length=100, choices=Statuses.choices, default=Statuses.PENDING)
-    """
-    The current status of the task.
-    """
+    """The current status of the task."""
 
     def __str__(self):
         return self.title
