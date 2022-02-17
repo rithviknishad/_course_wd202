@@ -13,9 +13,18 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from operator import ipow
 from django.contrib import admin
 from django.contrib.auth.views import LogoutView
+from django.db import router
 from django.urls import path, include
+from rest_framework.routers import SimpleRouter
+
+from tasks.apiviews import TaskViewSet
+
+router = SimpleRouter()
+
+router.register("api/task", TaskViewSet)
 
 from tasks.views import *
 
@@ -34,4 +43,4 @@ urlpatterns = [
     path("create-task/", TaskCreateView.as_view()),
     path("update-task/<pk>/", TaskUpdateView.as_view()),
     path("delete-task/<pk>/", GenericTaskDeleteView.as_view()),
-]
+] + router.urls
