@@ -1,4 +1,3 @@
-from django import dispatch
 from django.db import models
 
 from django.contrib.auth.models import User
@@ -67,5 +66,8 @@ class UserReportConfiguration(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     """The user that this report configuration belongs to."""
 
-    dispatch_time = models.TimeField()
+    dispatch_time = models.TimeField(auto_now=True)
     """The time at which the report should be dispatched."""
+
+    enabled = models.BooleanField(default=True)
+    """Whether the task report dispatch feature is enabled or not for the user."""
