@@ -66,7 +66,7 @@ class UserReportConfiguration(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     """The user that this report configuration belongs to."""
 
-    dispatch_time = models.TimeField(auto_now=True)
+    dispatch_time = models.TimeField(null=True)
     """The time at which the report should be dispatched."""
 
     enabled = models.BooleanField(default=True)
