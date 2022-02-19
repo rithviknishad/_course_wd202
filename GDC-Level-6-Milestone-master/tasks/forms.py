@@ -1,19 +1,18 @@
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.forms import ModelForm, ValidationError
 
-from tasks.models import Task
-from tasks.mixins import AuthFormMixin, FormStyleMixin
+from tasks import models, mixins
 
 
-class SignUpForm(AuthFormMixin, UserCreationForm):
+class SignUpForm(mixins.AuthFormMixin, UserCreationForm):
     pass
 
 
-class LoginForm(AuthFormMixin, AuthenticationForm):
+class LoginForm(mixins.AuthFormMixin, AuthenticationForm):
     pass
 
 
-class TaskForm(FormStyleMixin, ModelForm):
+class TaskForm(mixins.FormStyleMixin, ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.Meta.fields[0:3]:
@@ -28,5 +27,5 @@ class TaskForm(FormStyleMixin, ModelForm):
         return title
 
     class Meta:
-        model = Task
+        model = models.Task
         fields = ["title", "description", "priority", "completed", "status"]

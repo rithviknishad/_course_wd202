@@ -1,7 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from tasks.models import Task
-from tasks.forms import TaskForm
+from tasks import models, forms
 
 
 class FormStyleMixin:
@@ -22,7 +21,7 @@ class FormStyleMixin:
 
 class AuthorizedTaskManagerMixin(LoginRequiredMixin):
     def get_queryset(self):
-        return Task.objects.filter(deleted=False, user=self.request.user)
+        return models.Task.objects.filter(deleted=False, user=self.request.user)
 
 
 class AuthViewMixin:
@@ -45,7 +44,7 @@ class AuthFormMixin(FormStyleMixin):
 
 class TaskFormViewMixin(AuthorizedTaskManagerMixin):
 
-    form_class = TaskForm
+    form_class = forms.TaskForm
     template_name = "task_form.html"
     success_url = "/tasks"
     task_form_operation = ""
@@ -63,4 +62,4 @@ class TaskFormViewMixin(AuthorizedTaskManagerMixin):
                 break
             task.priority = priority = priority + 1
             deltas.append(task)
-        return Task.objects.bulk_update(deltas, ["priority"])
+        return models.Task.objects.bulk_update(deltas, ["priority"])

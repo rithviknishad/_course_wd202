@@ -3,24 +3,22 @@ from django.http import HttpResponse
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.views.generic.list import ListView
 
-from tasks.models import Task
-from tasks.mixins import AuthorizedTaskManagerMixin, AuthViewMixin, TaskFormViewMixin
-from tasks.forms import SignUpForm, LoginForm
+from tasks import models, mixins, forms
 
 
-class UserLoginView(AuthViewMixin, LoginView):
-    form_class = LoginForm
+class UserLoginView(mixins.AuthViewMixin, LoginView):
+    form_class = forms.LoginForm
     auth_action = "Login"
 
 
-class UserSignupView(AuthViewMixin, CreateView):
-    form_class = SignUpForm
+class UserSignupView(mixins.AuthViewMixin, CreateView):
+    form_class = forms.SignUpForm
     auth_action = "Sign Up"
     success_url = "/user/login"
 
 
-class GenericTaskView(AuthorizedTaskManagerMixin, ListView):
-    model = Task
+class GenericTaskView(mixins.AuthorizedTaskManagerMixin, ListView):
+    model = models.Task
     template_name = "tasks.html"
     context_object_name = "tasks"
 
@@ -61,7 +59,7 @@ class CompletedTaskView(GenericTaskView):
         return super().get_queryset().filter(completed=True)
 
 
-class TaskCreateView(TaskFormViewMixin, CreateView):
+class TaskCreateView(mixins.TaskFormViewMixin, CreateView):
     task_form_operation = "Create"
 
     def form_valid(self, form) -> HttpResponse:
@@ -73,7 +71,7 @@ class TaskCreateView(TaskFormViewMixin, CreateView):
         return response
 
 
-class TaskUpdateView(TaskFormViewMixin, UpdateView):
+class TaskUpdateView(mixins.TaskFormViewMixin, UpdateView):
     task_form_operation = "Update"
 
     def form_valid(self, form) -> HttpResponse:
@@ -85,8 +83,8 @@ class TaskUpdateView(TaskFormViewMixin, UpdateView):
         return response
 
 
-class GenericTaskDeleteView(AuthorizedTaskManagerMixin, DeleteView):
-    model = Task
+class GenericTaskDeleteView(mixins.AuthorizedTaskManagerMixin, DeleteView):
+    model = models.Task
     template_name = "task_delete.html"
     success_url = "/tasks"
 
