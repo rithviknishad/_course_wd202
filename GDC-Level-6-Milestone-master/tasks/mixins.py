@@ -1,6 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-from tasks import models, forms
+from tasks.models import Task
 
 
 class FormStyleMixin:
@@ -20,8 +20,18 @@ class FormStyleMixin:
 
 
 class AuthorizedTaskManagerMixin(LoginRequiredMixin):
+
+    model = Task
+
     def get_queryset(self):
-        return models.Task.objects.filter(deleted=False, user=self.request.user)
+        return Task.objects.filter(deleted=False, user=self.request.user)
+
+
+class AuthFormMixin(FormStyleMixin):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields:
+            self.fields[field].widget.attrs["class"] = self.text_field_style
 
 
 class AuthViewMixin:
@@ -33,33 +43,3 @@ class AuthViewMixin:
         context["title"] = self.auth_action
         context["auth_action"] = self.auth_action
         return context
-
-
-class AuthFormMixin(FormStyleMixin):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for field in self.fields:
-            self.fields[field].widget.attrs["class"] = self.text_field_style
-
-
-class TaskFormViewMixin(AuthorizedTaskManagerMixin):
-
-    form_class = forms.TaskForm
-    template_name = "task_form.html"
-    success_url = "/tasks"
-    task_form_operation = ""
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["page_header"] = f"{self.task_form_operation} Todo"
-        context["task_form_operation"] = self.task_form_operation
-        return context
-
-    def cascade_update_priorities(self, priority, task_id) -> int:
-        deltas = []
-        for task in self.get_queryset().filter(completed=False, priority__gte=priority).exclude(id=task_id):
-            if task.priority != priority:
-                break
-            task.priority = priority = priority + 1
-            deltas.append(task)
-        return models.Task.objects.bulk_update(deltas, ["priority"])
