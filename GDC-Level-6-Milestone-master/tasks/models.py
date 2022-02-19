@@ -1,3 +1,4 @@
+from django import dispatch
 from django.db import models
 
 from django.contrib.auth.models import User
@@ -58,3 +59,13 @@ class TaskStatusChangeLog(models.Model):
 
     new_status = models.CharField(max_length=100, choices=Task.Statuses.choices)
     """The new status the task is updated to."""
+
+
+class UserReportConfiguration(models.Model):
+    """Model class for report's configurations associated to the user."""
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    """The user that this report configuration belongs to."""
+
+    dispatch_time = models.TimeField()
+    """The time at which the report should be dispatched."""
