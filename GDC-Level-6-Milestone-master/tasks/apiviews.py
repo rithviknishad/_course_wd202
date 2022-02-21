@@ -6,6 +6,7 @@ from django_filters.rest_framework import (
     BooleanFilter,
     DateTimeFromToRangeFilter,
     ChoiceFilter,
+    ModelChoiceFilter,
 )
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.serializers import ModelSerializer
@@ -88,4 +89,4 @@ class TaskStatusChangesViewSet(ReadOnlyModelViewSet):
     filterset_class = TaskStatusChangesFilter
 
     def get_queryset(self):
-        return TaskStatusChangeLog.objects.filter(user=self.request.user, deleted=False)
+        return TaskStatusChangeLog.objects.filter(task__user=self.request.user)
