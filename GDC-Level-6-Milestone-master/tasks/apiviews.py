@@ -88,4 +88,4 @@ class TaskStatusChangesViewSet(ReadOnlyModelViewSet):
     filterset_class = TaskStatusChangesFilter
 
     def get_queryset(self):
-        return Task.objects.filter(user=self.request.user, deleted=False)
+        return TaskStatusChangeLog.objects.filter(user=self.request.user, deleted=False)
