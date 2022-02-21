@@ -86,3 +86,6 @@ class TaskStatusChangesViewSet(ReadOnlyModelViewSet):
     permission_classes = (IsAuthenticated,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TaskStatusChangesFilter
+
+    def get_queryset(self):
+        return Task.objects.filter(user=self.request.user, deleted=False)
