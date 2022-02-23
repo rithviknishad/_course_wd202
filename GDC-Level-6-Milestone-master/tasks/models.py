@@ -4,6 +4,14 @@ from django.contrib.auth.models import User
 
 
 class Task(models.Model):
+    class Meta:
+        ordering = ("completed", "priority")
+
+    class Statuses(models.TextChoices):
+        PENDING = "Pending", "Pending"
+        IN_PROGRESS = "In Progress", "In Progress"
+        COMPLETED = "Completed", "Completed"
+        CANCELLED = "Cancelled", "Cancelled"
 
     title = models.CharField(max_length=100)
     """The title of the task."""
@@ -29,11 +37,24 @@ class Task(models.Model):
     Lower the value, higher the priority (i.e., 0 has highest priority).
     """
 
-    class Meta:
-        ordering = (
-            "completed",
-            "priority",
-        )
+    status = models.CharField(max_length=100, choices=Statuses.choices, default=Statuses.PENDING)
+    """The current status of the task."""
 
     def __str__(self):
         return self.title
+
+
+class TaskStatusChangeLog(models.Model):
+    """Model class for task status change event records."""
+
+    task = models.ForeignKey(Task, on_delete=models.CASCADE)
+    """The task this status change log is associated to."""
+
+    timestamp = models.DateTimeField(auto_now=True)
+    """The timestamp when the status change event occurred."""
+
+    old_status = models.CharField(max_length=100, choices=Task.Statuses.choices)
+    """The status of the task before updating the new status."""
+
+    new_status = models.CharField(max_length=100, choices=Task.Statuses.choices)
+    """The new status the task is updated to."""

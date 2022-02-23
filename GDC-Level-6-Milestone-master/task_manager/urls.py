@@ -15,11 +15,21 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.contrib.auth.views import LogoutView
+from django.db import router
 from django.urls import path, include
+from rest_framework_nested import routers
+
+from tasks.apiviews import TaskStatusChangesViewSet, TaskViewSet
+
+router = routers.DefaultRouter()
+
+router.register("tasks", TaskViewSet)
+router.register("task-status-changes", TaskStatusChangesViewSet)
 
 from tasks.views import *
 
 urlpatterns = [
+    path("api/v1/", include(router.urls)),
     path("admin/", admin.site.urls),
     # For hot-reloading.
     path("__reload__/", include("django_browser_reload.urls")),

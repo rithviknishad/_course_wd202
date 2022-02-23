@@ -16,6 +16,7 @@ class GenericFormMixin:
         f"w-full leading-tight py-2 px-4 focus:outline-none focus:bg-white focus:border-purple-500 {field_styles}"
     )
     checkbox_style = f"rounded-sm form-check-input appearance-none h-4 w-4 checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer {field_styles}"
+    choicebox_style = "appearance-none block w-full px-4 py-2 text-xl font-normal text-gray-700 bg-white bg-clip-padding bg-no-repeat border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -114,6 +115,7 @@ class TaskForm(GenericFormMixin, ModelForm):
         for field in self.Meta.fields[0:3]:
             self.fields[field].widget.attrs["class"] = self.text_field_style
         self.fields["completed"].widget.attrs["class"] = self.checkbox_style
+        self.fields["status"].widget.attrs["class"] = self.choicebox_style
 
     def clean_title(self):
         title = self.cleaned_data["title"]
@@ -123,7 +125,7 @@ class TaskForm(GenericFormMixin, ModelForm):
 
     class Meta:
         model = Task
-        fields = ["title", "description", "priority", "completed"]
+        fields = ["title", "description", "priority", "completed", "status"]
 
 
 class TaskFormViewMixin(AuthorizedTaskManager):
