@@ -1,7 +1,7 @@
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.forms import ModelForm, ValidationError
 
-from tasks.models import Task
+from tasks.models import Task, UserReportConfiguration
 from tasks.mixins import AuthFormMixin, FormStyleMixin
 
 
@@ -30,3 +30,15 @@ class TaskForm(FormStyleMixin, ModelForm):
     class Meta:
         model = Task
         fields = ["title", "description", "priority", "completed", "status"]
+
+
+class UserReportConfigurationForm(FormStyleMixin, ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.Meta.fields[0:3]:
+            self.fields[field].widget.attrs["class"] = self.text_field_style
+        self.fields["enabled"].widget.attrs["class"] = self.checkbox_style
+
+    class Meta:
+        model = UserReportConfiguration
+        fields = ["enabled", "dispatch_time"]
