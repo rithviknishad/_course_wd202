@@ -1,9 +1,14 @@
 {% extends 'base.html' %}
 
 {% block action_buttons %}
-    <a href="/user/logout" class="p-3 text-[20px] text-[#EF4444]">
-        Log Out
-    </a>
+    <div class="">
+        <a href="{{user_report_config_url}}" class="p-3 text-[20px] text-[#EF4444]">
+            Report Config
+        </a><br>
+        <a href="/user/logout" class="p-3 text-[20px] text-[#EF4444]">
+            Log Out
+        </a>
+    </div>
 {% endblock action_buttons %}
 
 {% block content %}
