@@ -71,3 +71,6 @@ class UserReportConfiguration(models.Model):
 
     enabled = models.BooleanField(default=True)
     """Whether the task report dispatch feature is enabled or not for the user."""
+
+    last_dispatched = models.DateTimeField(null=True)
+    """When the report was last dispatched."""
