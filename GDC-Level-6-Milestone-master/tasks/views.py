@@ -1,12 +1,14 @@
-from django.contrib.auth.views import LoginView
+import datetime
+
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponse
+from django.contrib.auth.views import LoginView
+from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django.views.generic.list import ListView
 
-from tasks.mixins import AuthViewMixin, AuthorizedTaskManagerMixin
-from tasks.forms import LoginForm, SignUpForm, TaskForm
-from tasks.models import Task
+from tasks.forms import LoginForm, SignUpForm, TaskForm, UserReportConfigurationForm
+from tasks.mixins import AuthorizedTaskManagerMixin, AuthViewMixin
+from tasks.models import Task, UserReportConfiguration
 
 
 class UserLoginView(AuthViewMixin, LoginView):
@@ -37,6 +39,10 @@ class GenericTaskView(AuthorizedTaskManagerMixin, ListView):
             tab.view_name: (tab.path if self.view_name != tab.view_name else None)
             for tab in [AllTaskView, PendingTaskView, CompletedTaskView]
         }
+        user_report_config = UserReportConfiguration.objects.filter(user=self.request.user)
+        context["user_report_config_url"] = (
+            f"/user/config/report/{user_report_config[0].id}/" if user_report_config else "/user/config/report/"
+        )
         return context
 
 
@@ -66,7 +72,7 @@ class GenericTaskFormView(AuthorizedTaskManagerMixin):
     form_class = TaskForm
     template_name = "task_form.html"
     success_url = "/tasks"
-    task_form_operation = ""
+    task_form_operation = None
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -115,4 +121,50 @@ class GenericTaskDeleteView(AuthorizedTaskManagerMixin, DeleteView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["page_header"] = "Delete Task?"
+        return context
+
+
+class UserReportConfigurationCreateView(LoginRequiredMixin, CreateView):
+    form_class = UserReportConfigurationForm
+    template_name = "user_report_config.html"
+    success_url = "/tasks"
+
+    def get(self, request, *args, **kwargs) -> HttpResponse:
+
+        # redirects to existing user report config, if already exists.
+        config_report = UserReportConfiguration.objects.filter(user=self.request.user.id)
+        if config_report:
+            return HttpResponseRedirect(f"/user/config/report/{config_report[0].id}")
+        return super().get(request, *args, **kwargs)
+
+    def form_valid(self, form) -> HttpResponse:
+        response = super().form_valid(form)
+        self.object.user = self.request.user
+        self.object.save()
+        return response
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["page_header"] = f"Report Configurations"
+        return context
+
+
+class UserReportConfigurationUpdateView(LoginRequiredMixin, UpdateView):
+    form_class = UserReportConfigurationForm
+    template_name = "user_report_config.html"
+    success_url = "/tasks"
+
+    def get_queryset(self):
+        qs = UserReportConfiguration.objects.filter(user=self.request.user.id)
+        if qs is None:
+            UserReportConfiguration.objects.create(
+                user=self.request.user,
+                dispatch_time=datetime.time(10, 0, 0),
+            ).save()
+            qs = UserReportConfiguration.objects.filter(user=self.request.user.id)
+        return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["page_header"] = f"Report Configurations"
         return context
