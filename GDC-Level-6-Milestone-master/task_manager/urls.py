@@ -44,4 +44,7 @@ urlpatterns = [
     path("create-task/", TaskCreateView.as_view()),
     path("update-task/<pk>/", TaskUpdateView.as_view()),
     path("delete-task/<pk>/", GenericTaskDeleteView.as_view()),
+    # Authenticated User's configuration related URLs
+    path("user/config/report/", UserReportConfigurationCreateView.as_view()),
+    path("user/config/report/<pk>/", UserReportConfigurationUpdateView.as_view()),
 ]
