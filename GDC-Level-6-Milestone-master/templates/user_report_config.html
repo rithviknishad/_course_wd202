@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="h-[80px]"></div>
+    <form action="" method="post">
+        {% for field in form %}
+            <div class="py-[11px]">
+                {% if field.id_for_label != "id_enabled" %}
+                    <label for="{{field.id_for_label}}" class="text-[18px]">{{ field.label_tag }}</label>
+                {% endif %}
+                <div class="h-[6px]"></div>
+                {{ field }}
+                {% if field.id_for_label == "id_enabled" %}
+                    <label class="form-check-label inline-block text-gray-800" for="field.id_for_label">
+                        Enabled
+                    </label>
+                {% endif %}
+                {% for error in field.errors %}
+                    <p class="m-2 text-[14px] text-red-500 w-[382px]">{{error}}</p>
+                {% endfor %}
+            </div>
+        {% endfor %}
+        
+        <div class="w-[382px]">
+            {% for error in form.non_field_errors %}
+                <p class="text-red-500">{{error}}</p>
+            {% endfor %}
+        </div>
+
+        {%csrf_token%}
+
+        <button type="submit" class="mt-[44px] w-full h-[57px] text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:bg-gradient-to-l focus:ring-4 focus:ring-purple-200 dark:focus:ring-purple-800 font-medium rounded-lg text-sm text-center mr-2 mb-2">
+            <p class="text-[18px]">Save</p> 
+        </button>
+    </form>
+{% endblock content %}
