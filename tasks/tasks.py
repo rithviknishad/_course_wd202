@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 import inspect
 
 from tasks.models import Task, UserReportConfiguration
+from datetime import datetime
 
 __report_email_subject = subject = "Daily Report | Todo Manager"
 
@@ -50,5 +51,6 @@ def dispatch_user_reports():
             from_email="bot@tasks_manager.io",
             recipient_list=[user.email],
         )
-        report_config.last_dispatched = now
+        dt = report_config.dispatch_time
+        report_config.last_dispatched = now.replace(hour=dt.hour, minute=dt.minute)
         report_config.save(update_fields=["last_dispatched"])

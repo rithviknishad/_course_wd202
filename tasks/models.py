@@ -1,6 +1,7 @@
 from django.db import models
 
 from django.contrib.auth.models import User
+from datetime import datetime
 
 
 class Task(models.Model):
@@ -66,11 +67,11 @@ class UserReportConfiguration(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     """The user that this report configuration belongs to."""
 
-    dispatch_time = models.TimeField(null=True)
+    dispatch_time = models.TimeField(default=datetime.now)
     """The time at which the report should be dispatched."""
 
     enabled = models.BooleanField(default=True)
     """Whether the task report dispatch feature is enabled or not for the user."""
 
-    last_dispatched = models.DateTimeField(null=True)
+    last_dispatched = models.DateTimeField(default=datetime.now)
     """When the report was last dispatched."""
