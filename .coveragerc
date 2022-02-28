@@ -1,0 +1,7 @@
+[run]
+source = tasks
+omit = */migrations/*, *tests.py, *apps.py
+
+[report]
+source = .
+omit = */migrations/*, *tests.py, *apps.py
